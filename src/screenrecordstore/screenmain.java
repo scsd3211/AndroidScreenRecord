@@ -233,6 +233,7 @@ public class screenmain extends Activity {
                         .append("\n  Bitrate: ").append(videoCaps.getBitrateRange());
                 if (ScreenRecorder.VIDEO_AVC.equals(mimeType)) {
                     MediaCodecInfo.CodecProfileLevel[] levels = caps.profileLevels;
+                    
 
                     builder.append("\n  Profile-levels: ");
                     for (MediaCodecInfo.CodecProfileLevel level : levels) {
