@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-/**
- * @author yrom
- * @version 2017/12/4
- */
+
 abstract class BaseEncoder implements Encoder {
     static abstract class Callback implements Encoder.Callback {
         void onInputBufferAvailable(BaseEncoder encoder, int index) {

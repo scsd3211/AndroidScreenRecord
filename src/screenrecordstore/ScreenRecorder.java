@@ -37,9 +37,12 @@ public class ScreenRecorder {
     private MediaProjection mMediaProjection;
     private VideoEncoder mVideoEncoder;
     private MicRecorder mAudioEncoder;
+    //增加录制系统声音的
+    private SpeakerRecorder mSpeakerEncoder;
+    
 
     private MediaFormat mVideoOutputFormat = null, mAudioOutputFormat = null;
-    private int mVideoTrackIndex = INVALID_INDEX, mAudioTrackIndex = INVALID_INDEX;
+    private int mVideoTrackIndex = INVALID_INDEX, mAudioTrackIndex = INVALID_INDEX , mSpeakerAudioTrackIndex = INVALID_INDEX ;
     private MediaMuxer mMuxer;
     private boolean mMuxerStarted = false;
 
@@ -229,6 +232,8 @@ public class ScreenRecorder {
         }
         ByteBuffer encodedData = mAudioEncoder.getOutputBuffer(index);
         writeSampleData(mAudioTrackIndex, buffer, encodedData);
+        
+        
         mAudioEncoder.releaseOutputBuffer(index);
         if ((buffer.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
             if (VERBOSE)
@@ -323,6 +328,9 @@ public class ScreenRecorder {
 
         mVideoTrackIndex = mMuxer.addTrack(mVideoOutputFormat);
         mAudioTrackIndex = mAudioEncoder == null ? INVALID_INDEX : mMuxer.addTrack(mAudioOutputFormat);
+     //   mSpeakerAudioTrackIndex = mSpeakerEncoder == null ? INVALID_INDEX : mMuxer.addTrack(mAudioOutputFormat);
+        
+        
         mMuxer.start();
         mMuxerStarted = true;
         if (VERBOSE) Log.i(TAG, "Started media muxer, videoIndex=" + mVideoTrackIndex);
@@ -379,7 +387,10 @@ public class ScreenRecorder {
 
     private void prepareAudioEncoder() throws IOException {
         final MicRecorder micRecorder = mAudioEncoder;
+        
+        
         if (micRecorder == null) return;
+        
         AudioEncoder.Callback callback = new AudioEncoder.Callback() {
             boolean ranIntoError = false;
 
@@ -466,6 +477,8 @@ public class ScreenRecorder {
             mAudioEncoder.release();
             mAudioEncoder = null;
         }
+        
+        
 
         if (mMediaProjection != null) {
             mMediaProjection.stop();

@@ -1,18 +1,4 @@
-/*
- * Copyright (c) 2017 Yrom Wang <http://www.yrom.net>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 package screenrecordstore;
 
@@ -42,13 +28,10 @@ import static android.media.MediaCodec.BUFFER_FLAG_KEY_FRAME;
 import static android.media.MediaCodec.INFO_OUTPUT_FORMAT_CHANGED;
 
 
-/**
- * @author yrom
- * @version 2017/12/4
- */
+
 class MicRecorder implements Encoder {
     private static final String TAG = "MicRecorder";
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
 
     private final AudioEncoder mEncoder;
     private final HandlerThread mRecordThread;
@@ -364,11 +347,26 @@ class MicRecorder implements Encoder {
                     sampleRateInHz, channelConfig, audioFormat));
             return null;
         }
+/*        AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.REMOTE_SUBMIX,
+                sampleRateInHz,
+                channelConfig,
+                audioFormat,
+                minBytes * 2);*/
+
+        
         AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 sampleRateInHz,
                 channelConfig,
                 audioFormat,
                 minBytes * 2);
+
+        // MIC  VOICE_DOWNLINK VOICE_CALL  VOICE_DOWNLINK
+        
+/*       AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                sampleRateInHz,
+                channelConfig,
+                audioFormat,
+                minBytes * 2);*/
 
         if (record.getState() == AudioRecord.STATE_UNINITIALIZED) {
             Log.e(TAG, String.format(Locale.US, "Bad arguments to new AudioRecord %d, %d, %d",
@@ -377,9 +375,7 @@ class MicRecorder implements Encoder {
         }
         if (VERBOSE) {
             Log.i(TAG, "created AudioRecord " + record + ", MinBufferSize= " + minBytes);
-            if (Build.VERSION.SDK_INT >= 24) {
-                Log.d(TAG, " size in frame " + record.getBufferSizeInFrames());
-            }
+
         }
         return record;
     }

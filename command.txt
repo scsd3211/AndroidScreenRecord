@@ -1,0 +1,198 @@
+    1  #!/usr/bin/env bash
+    2  #------------------------------------------------------------------------------
+    3  # Bash script to run external Solidity tests.
+    4  #
+    5  # Argument: Path to soljson.js to test.
+    6  #
+    7  # Requires npm, networking access and git to download the tests.
+    8  #
+    9  # ------------------------------------------------------------------------------
+   10  # This file is part of solidity.
+   11  #
+   12  # solidity is free software: you can redistribute it and/or modify
+   13  # it under the terms of the GNU General Public License as published by
+   14  # the Free Software Foundation, either version 3 of the License, or
+   15  # (at your option) any later version.
+   16  #
+   17  # solidity is distributed in the hope that it will be useful,
+   18  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+   19  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   20  # GNU General Public License for more details.
+   21  #
+   22  # You should have received a copy of the GNU General Public License
+   23  # along with solidity.  If not, see <http://www.gnu.org/licenses/>
+   24  #
+   25  # (c) 2016 solidity contributors.
+   26  #------------------------------------------------------------------------------
+   27  set -e
+   28  if [ ! -f "$1" ]; then   echo "Usage: $0 <path to soljson.js>";   exit 1; fi
+   29  #!/bin/bash
+   30  trap '[ "$?" -eq 0 ] || read -p "Looks like something went wrong in step ´$STEP´... Press any key to continue..."' EXIT
+   31  # TODO: I'm sure this is not very robust.  But, it is needed for now to ensure
+   32  # that binaries provided by Docker Toolbox over-ride binaries provided by
+   33  # Docker for Windows when launching using the Quickstart.
+   34  export PATH="/c/Program Files/Docker Toolbox:$PATH"
+   35  VM=${DOCKER_MACHINE_NAME-default}
+   36  DOCKER_MACHINE=./docker-machine.exe
+   37  STEP="Looking for vboxmanage.exe"
+   38  if [ ! -z "$VBOX_MSI_INSTALL_PATH" ]; then   VBOXMANAGE="${VBOX_MSI_INSTALL_PATH}VBoxManage.exe"; else   VBOXMANAGE="${VBOX_INSTALL_PATH}VBoxManage.exe"; fi
+   39  BLUE='\033[1;34m'
+   40  GREEN='\033[0;32m'
+   41  NC='\033[0m'
+   42  #clear all_proxy if not socks address
+   43  if  [[ $ALL_PROXY != socks* ]]; then   unset ALL_PROXY; fi
+   44  if  [[ $all_proxy != socks* ]]; then   unset all_proxy; fi
+   45  if [ ! -f "${DOCKER_MACHINE}" ]; then   echo "Docker Machine is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   46  if [ ! -f "${VBOXMANAGE}" ]; then   echo "VirtualBox is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   47  "${VBOXMANAGE}" list vms | grep \""${VM}"\" &> /dev/null
+   48  VM_EXISTS_CODE=$?
+   49  set -e
+   50  STEP="Checking if machine $VM exists"
+   51  if [ $VM_EXISTS_CODE -eq 1 ]; then   "${DOCKER_MACHINE}" rm -f "${VM}" &> /dev/null || :;   rm -rf ~/.docker/machine/machines/"${VM}"   if [ "${HTTP_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTP_PROXY=$HTTP_PROXY";   fi;   if [ "${HTTPS_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTPS_PROXY=$HTTPS_PROXY";   fi;   if [ "${NO_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env NO_PROXY=$NO_PROXY";   fi;   "${DOCKER_MACHINE}" create -d virtualbox $PROXY_ENV "${VM}"; fi
+   52  STEP="Checking status on $VM"
+   53  VM_STATUS="$(${DOCKER_MACHINE} status ${VM} 2>&1)"
+   54  if [ "${VM_STATUS}" != "Running" ]; then   "${DOCKER_MACHINE}" start "${VM}";   yes | "${DOCKER_MACHINE}" regenerate-certs "${VM}"; fi
+   55  STEP="Setting env"
+   56  eval "$(${DOCKER_MACHINE} env --shell=bash --no-proxy ${VM})"
+   57  STEP="Finalize"
+   58  clear
+   59  cat << EOF
+   60                          ##         .
+   61                    ## ## ##        ==
+   62                 ## ## ## ## ##    ===
+   63             /"""""""""""""""""\___/ ===
+   64        ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+   65             \______ o           __/
+   66               \    \         __/
+   67                \____\_______/
+   68  EOF
+   69  echo -e "${BLUE}docker${NC} is configured to use the ${GREEN}${VM}${NC} machine with IP ${GREEN}$(${DOCKER_MACHINE} ip ${VM})${NC}"
+   70  echo "For help getting started, check out the docs at https://docs.docker.com"
+   71  echo
+   72  cd
+   73  docker () {   MSYS_NO_PATHCONV=1 docker.exe "$@"; }
+   74  export -f docker
+   75  if [ $# -eq 0 ]; then   echo "Start interactive shell";   exec "$BASH" --login -i; else   echo "Start shell with command";   exec "$BASH" -c "$*"; fi
+   76  git clone https://github.com/asdfqwrasdf/ArcFaceDemo.git
+   77  #!/bin/bash
+   78  trap '[ "$?" -eq 0 ] || read -p "Looks like something went wrong in step ´$STEP´... Press any key to continue..."' EXIT
+   79  # TODO: I'm sure this is not very robust.  But, it is needed for now to ensure
+   80  # that binaries provided by Docker Toolbox over-ride binaries provided by
+   81  # Docker for Windows when launching using the Quickstart.
+   82  export PATH="/c/Program Files/Docker Toolbox:$PATH"
+   83  VM=${DOCKER_MACHINE_NAME-default}
+   84  DOCKER_MACHINE=./docker-machine.exe
+   85  STEP="Looking for vboxmanage.exe"
+   86  if [ ! -z "$VBOX_MSI_INSTALL_PATH" ]; then   VBOXMANAGE="${VBOX_MSI_INSTALL_PATH}VBoxManage.exe"; else   VBOXMANAGE="${VBOX_INSTALL_PATH}VBoxManage.exe"; fi
+   87  BLUE='\033[1;34m'
+   88  GREEN='\033[0;32m'
+   89  NC='\033[0m'
+   90  #clear all_proxy if not socks address
+   91  if  [[ $ALL_PROXY != socks* ]]; then   unset ALL_PROXY; fi
+   92  if  [[ $all_proxy != socks* ]]; then   unset all_proxy; fi
+   93  if [ ! -f "${DOCKER_MACHINE}" ]; then   echo "Docker Machine is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   94  if [ ! -f "${VBOXMANAGE}" ]; then   echo "VirtualBox is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   95  "${VBOXMANAGE}" list vms | grep \""${VM}"\" &> /dev/null
+   96  VM_EXISTS_CODE=$?
+   97  set -e
+   98  STEP="Checking if machine $VM exists"
+   99  if [ $VM_EXISTS_CODE -eq 1 ]; then   "${DOCKER_MACHINE}" rm -f "${VM}" &> /dev/null || :;   rm -rf ~/.docker/machine/machines/"${VM}"   if [ "${HTTP_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTP_PROXY=$HTTP_PROXY";   fi;   if [ "${HTTPS_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTPS_PROXY=$HTTPS_PROXY";   fi;   if [ "${NO_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env NO_PROXY=$NO_PROXY";   fi;   "${DOCKER_MACHINE}" create -d virtualbox $PROXY_ENV "${VM}"; fi
+  100  STEP="Checking status on $VM"
+  101  VM_STATUS="$(${DOCKER_MACHINE} status ${VM} 2>&1)"
+  102  if [ "${VM_STATUS}" != "Running" ]; then   "${DOCKER_MACHINE}" start "${VM}";   yes | "${DOCKER_MACHINE}" regenerate-certs "${VM}"; fi
+  103  STEP="Setting env"
+  104  eval "$(${DOCKER_MACHINE} env --shell=bash --no-proxy ${VM})"
+  105  STEP="Finalize"
+  106  clear
+  107  cat << EOF
+  108                          ##         .
+  109                    ## ## ##        ==
+  110                 ## ## ## ## ##    ===
+  111             /"""""""""""""""""\___/ ===
+  112        ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+  113             \______ o           __/
+  114               \    \         __/
+  115                \____\_______/
+  116  EOF
+  117  echo -e "${BLUE}docker${NC} is configured to use the ${GREEN}${VM}${NC} machine with IP ${GREEN}$(${DOCKER_MACHINE} ip ${VM})${NC}"
+  118  echo "For help getting started, check out the docs at https://docs.docker.com"
+  119  echo
+  120  cd
+  121  docker () {   MSYS_NO_PATHCONV=1 docker.exe "$@"; }
+  122  export -f docker
+  123  if [ $# -eq 0 ]; then   echo "Start interactive shell";   exec "$BASH" --login -i; else   echo "Start shell with command";   exec "$BASH" -c "$*"; fi
+  124  help
+  125  he
+  126  ls
+  127  dir
+  128  adb logcat
+  129  help
+  130  ls
+  131  adb locat | grep chenz
+  132  adb logcat | grep chen
+  133  grep
+  134  grep --help
+  135  grep --help
+  136  adb logcat 
+  137  G;
+  138  G:
+  139  G:
+  140  dir
+  141  #!/bin/sh
+  142  set -e
+  143  autoreconf -if --warnings=all
+  144  #!/bin/sh
+  145  set -e
+  146  autoreconf -if --warnings=all
+  147  git status -s
+  148  git status 
+  149  git config --global user.name "scsd3211"
+  150  git config --global user.email "binghunxuluo@qq.com"
+  151  git status -s
+  152  dir
+  153  cd src/
+  154  dir
+  155  cd com/
+  156  dir
+  157  cd example/
+  158  dir
+  159  cd czsss/
+  160  dir
+  161  ls -l
+  162  git status
+  163  git status -s
+  164  ls -l
+  165  git -ls -files
+  166  git -ls-files
+  167  git-ls-files
+  168  git ls-files
+  169  ls -l
+  170  git add AnimationTextView.java 
+  171  git ls-files
+  172  cd ..
+  173  cd ..
+  174  dir
+  175  cd ..
+  176  dir
+  177  cd screenrecordstore/
+  178  dir
+  179  git ls-files
+  180  ls -l
+  181  git add screenmain.java styleable.java 
+  182  git ls-files
+  183  cd ..
+  184  cd ..
+  185  cd ..
+  186  ls -l
+  187  cd czsss/
+  188  dir
+  189  ls -l
+  190  git status
+  191  git status -s
+  192  git commit -a "tianjia"
+  193  git commit "tianjia"
+  194  git commit -m "tianjia"
+  195  git push origin master
+  196  git push origin master
+  197  history
+  198  history >> command.txt

@@ -8,4 +8,7 @@
     <string name="user_cancelled">user_cancelled</string>
 
 	<string name="stop">stop</string>
+	
+	<string name="listening">听话中</string>
+	<string name="busychannel">信道忙</string>
 </resources>

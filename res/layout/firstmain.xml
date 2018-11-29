@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:backgroundTint="@android:color/holo_blue_light"
     android:orientation="vertical" >
 
     <Button
@@ -21,5 +22,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="别点" />
+
+    <Button
+        android:id="@+id/buttonStartQuickly"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="直接录制" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:gravity="center_horizontal"
+        android:text="TextView"
+        android:textSize="44dp" />
+    
+        <com.example.czsss.AnimationTextView
+        android:id="@+id/testText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:gravity="center_horizontal"
+        android:text="TextView"
+        android:textSize="44dp" />
 
 </LinearLayout>

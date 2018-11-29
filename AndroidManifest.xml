@@ -2,13 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.czsss"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0" 
+    android:sharedUserId="android.uid.system">
 
     <uses-sdk
         android:minSdkVersion="21"
         android:targetSdkVersion="21" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT"/>
+    <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT"/>
 
     <application
         android:allowBackup="true"
@@ -25,7 +28,20 @@
             </intent-filter>
         </activity>
         <activity android:name="MainActivity"></activity>
-        <activity android:name="screenrecordstore.screenmain"></activity>
+        <activity android:name="screenrecordstore.screenmain"
+            	  android:exported = "true"
+            ></activity>
+        <receiver
+            android:name = "screenrecordstore.screenbroadcastreceiver"
+            android:exported = "true"
+            android:enabled = "true"
+            >
+            <intent-filter>
+                <action android:name="StartRecordScreen" />
+
+            </intent-filter>
+            
+        </receiver>
     </application>
 
 </manifest>

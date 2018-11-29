@@ -1,6 +1,7 @@
 package screenrecordstore;
 
 import android.R.integer;
+import android.R.string;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -78,6 +80,45 @@ public class screenmain extends Activity {
     private MediaCodecInfo[] mAacCodecInfos; // aac codecs
    
     private ScreenRecorder mRecorder;
+    private int ifquickRecord = 0;
+    
+    private int ItsResumeOrFirstCreate = 0;
+    
+    private String SetVedio 			= "SetVedio";
+    private String SetVieoResolution 	= "SetVieoResolution";
+    private String SetVideoFramerate 	= "SetVideoFramerate";
+    private String SetIFrameInterval 	= "SetIFrameInterval";
+    private String SetVideoBitrate 		= "SetVideoBitrate";
+    private String SetAudioBitrate 		= "SetAudioBitrate";
+    private String SetAudioSampleRate 	= "SetAudioSampleRate";
+    
+    private String SetAudioChannelCount 	= "SetAudioChannelCount";
+    private String SetVideoCodec 		= "SetVideoCodec";
+    private String SetAudioCodec 		= "SetAudioCodec";
+    private String SetVideoProfileLevel = "SetVideoProfileLevel";
+    private String SetAudioProfile 		= "SetAudioProfile";
+    private String SetOrientationt 		= "SetOrientationt";
+    
+    private String Setwidth 		= "Setwidth";
+    private String Setheight		= "Setheight";
+    private String Setframerate		= "Setframerate";
+    private String Setiframe 		= "Setiframe";
+    private String Setbitrate		= "Setbitrate";
+    private String SetprofileLevel	= "SetprofileLevel";
+    
+    private String Setcodec			= "Setcodec";
+    
+    private String SetVoicebitrate 		 = "SetVoicebitrate";
+    private String SetVoicesamplerate  	 = "SetVoicesamplerate";
+    private String SetVoicechannelCount  = "SetVoicechannelCount";
+    private String SetVoiceprofile	 	 = "SetVoiceprofile";
+    private String SetVoicecodec	 	 = "SetVoicecodec";
+
+    
+    private SharedPreferences mSharedPreferences;//= getSharedPreferences("HyteraScreen", Context.MODE_PRIVATE);
+    private SharedPreferences.Editor mEditor;// = mSharedPreferences.edit();
+    
+    
     private static final String TAG = "chenzhuo  screenmain";
     
     private BroadcastReceiver mStopActionReceiver = new BroadcastReceiver() {
@@ -95,6 +136,9 @@ public class screenmain extends Activity {
                 // disable detecting FileUriExposure on public file
                 StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().build());
                 viewResult(file);
+                
+                //结束掉当前Activity
+                finish();
             } finally {
                 StrictMode.setVmPolicy(vmPolicy);
             }
@@ -119,8 +163,42 @@ public class screenmain extends Activity {
     
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.screenlayout);
+        Intent intent = getIntent();//获取传来的intent对象
+        String data = intent.getStringExtra("setOrstart");//获取键值对的键名
+        
+        //记录 onCreate
+        ItsResumeOrFirstCreate = 1;
+        
+        mSharedPreferences 		= getSharedPreferences("HyteraScreen", Context.MODE_PRIVATE);
+        mEditor					= mSharedPreferences.edit();
+        
         mMediaProjectionManager = (MediaProjectionManager)getApplicationContext().getSystemService(MEDIA_PROJECTION_SERVICE);
+        
+        if(data != null)
+        {
+            Log.d(TAG,"Intent data" + data);//在logcat中可以得到显示结果
+            
+            if(data.equals("Start"))
+            {
+            	
+            	 setContentView(R.layout.startrecord);
+            	Log.d(TAG,"Intent data equals" + data);//在logcat中可以得到显示结果
+            	ifquickRecord = 1;
+            	quicklyRecord();
+            	return;
+            }
+            else {
+            	ifquickRecord = 0;
+            	Log.d(TAG,"no intent is");
+			}
+        	
+        }
+        	
+
+        
+        setContentView(R.layout.screenlayout);
+        
+
         
         Log.d(TAG,"onCreate 1");
         bindViews();
@@ -180,12 +258,68 @@ public class screenmain extends Activity {
 		};
         Log.d(TAG,"onCreate 4");
    
-
+        setAllSet();
+        
 
     }
     
     
-    private void restoreSelectionFromPreferences(SharedPreferences preferences, NamedSpinner spinner) {
+    
+    
+    
+    
+    @Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.d(TAG,"onStart 2");
+        Intent intent = getIntent();//获取传来的intent对象
+        String data = intent.getStringExtra("setOrstart");//获取键值对的键名
+        
+        String datafrom = intent.getStringExtra("setOrstartfrombroadcast");//获取键值对的键名
+        if(datafrom != null)
+        {
+            if(datafrom.equals("Start"))
+            {   
+            	
+            	if(ItsResumeOrFirstCreate == 1)
+            	{
+            		
+            	}
+            	else
+            	{            		
+    	           	Log.d(TAG,"onStart Intent data equals" + data);//在logcat中可以得到显示结果
+    	           	ifquickRecord = 1;
+    	           	quicklyRecord();
+    	            moveTaskToBack(true);
+    	           	return;
+            		
+            	}	
+
+           }
+           else {
+//	           	ifquickRecord = 0;
+	           	Log.d(TAG,"onStart no intent is");
+			}
+        	
+        	
+        }	
+        
+    	if(ItsResumeOrFirstCreate == 1)
+    	{
+    		ItsResumeOrFirstCreate = 0;
+    		
+    	}
+
+		
+	}
+
+
+
+
+
+
+	private void restoreSelectionFromPreferences(SharedPreferences preferences, NamedSpinner spinner) {
         int resId = spinner.getId();
         String key = getResources().getResourceEntryName(resId);
         int value = preferences.getInt(key, -1);
@@ -194,7 +328,32 @@ public class screenmain extends Activity {
         }
     }
     
-    private void restoreSelections(NamedSpinner... spinners) {
+    @Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		Log.d(TAG,"onStop ------");
+
+		
+	}
+
+
+    
+    
+    
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		
+		Log.d(TAG,"onDestroy ------");
+        if (mRecorder != null) {
+            stopRecorder();
+        }
+	}
+
+
+	private void restoreSelections(NamedSpinner... spinners) {
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         for (NamedSpinner spinner : spinners) {
@@ -256,6 +415,10 @@ public class screenmain extends Activity {
         }
     }
     
+    
+    
+    
+    
     private void bindViews() {
     	
     	Log.d(TAG,"bindViews");
@@ -267,6 +430,8 @@ public class screenmain extends Activity {
 				
 			      Log.i(TAG, "R.id.record_butto");
 				// TODO Auto-generated method stub
+			      
+			    getAllSet();  
 		        if (mRecorder != null) {
 		            stopRecorder();
 		        } else if (hasPermissions()) {
@@ -282,6 +447,9 @@ public class screenmain extends Activity {
 
         mVideoCodec = (NamedSpinner) findViewById(R.id.video_codec);
         mVieoResolution = (NamedSpinner) findViewById(R.id.resolution);
+        
+        
+        
         mVideoFramerate = (NamedSpinner) findViewById(R.id.framerate);
         mIFrameInterval = (NamedSpinner) findViewById(R.id.iframe_interval);
         mVideoBitrate = (NamedSpinner) findViewById(R.id.video_bitrate);
@@ -312,6 +480,8 @@ public class screenmain extends Activity {
 			@Override
 			public void onItemSelected(NamedSpinner view, int position) {
 				// TODO Auto-generated method stub
+				
+				
 				onVideoCodecSelected((String) view.getSelectedItem());
 				
 				
@@ -328,7 +498,6 @@ public class screenmain extends Activity {
 			@Override
 			public void onItemSelected(NamedSpinner view, int position) {
 				// TODO Auto-generated method stub
-				
 				 onAudioCodecSelected((String) view.getSelectedItem());
 				 
 			}
@@ -348,6 +517,7 @@ public class screenmain extends Activity {
 			@Override
 			public void onItemSelected(NamedSpinner view, int position) {
 				// TODO Auto-generated method stub
+				
 				onFramerateChanged(position,(String) view.getSelectedItem());
 				
 			}
@@ -403,6 +573,59 @@ public class screenmain extends Activity {
         
         
         
+    }
+    
+    
+    private void setAllSet() {
+    	
+    	Log.d(TAG,"setAllSet 4");
+    	mVieoResolution.setSelectedPosition(mSharedPreferences.getInt(SetVieoResolution, 0));
+    	mVideoFramerate.setSelectedPosition(mSharedPreferences.getInt(SetVideoFramerate, 0));
+    	mIFrameInterval.setSelectedPosition(mSharedPreferences.getInt(SetIFrameInterval, 0));
+    	mVideoBitrate.setSelectedPosition(mSharedPreferences.getInt(SetVideoBitrate, 0));
+    	mAudioBitrate.setSelectedPosition(mSharedPreferences.getInt(SetAudioBitrate, 0));
+    	mAudioSampleRate.setSelectedPosition(mSharedPreferences.getInt(SetAudioSampleRate, 0));
+    	
+    	
+    	mAudioChannelCount.setSelectedPosition(mSharedPreferences.getInt(SetAudioChannelCount, 0));
+    	mVideoCodec.setSelectedPosition(mSharedPreferences.getInt(SetVideoCodec, -1));
+    	mAudioCodec.setSelectedPosition(mSharedPreferences.getInt(SetAudioCodec, 0));
+    	mVideoProfileLevel.setSelectedPosition(mSharedPreferences.getInt(SetVideoProfileLevel, 0));
+    	mAudioProfile.setSelectedPosition(mSharedPreferences.getInt(SetAudioProfile, 0));
+    	mOrientation.setSelectedPosition(mSharedPreferences.getInt(SetOrientationt, 0));    	
+    	
+    	
+	}
+    
+    private void getAllSet() {
+    	
+    	
+    	
+    	Log.d(TAG,"getAllSet 4");
+    	
+    	mEditor.putInt(SetVieoResolution, mVieoResolution.getSelectedItemPosition());
+    	mEditor.putInt(SetVideoFramerate, mVideoFramerate.getSelectedItemPosition());
+    	mEditor.putInt(SetIFrameInterval, mIFrameInterval.getSelectedItemPosition());
+    	mEditor.putInt(SetVideoBitrate, mVideoBitrate.getSelectedItemPosition());
+    	mEditor.putInt(SetAudioBitrate, mAudioBitrate.getSelectedItemPosition());
+    	mEditor.putInt(SetAudioSampleRate, mAudioSampleRate.getSelectedItemPosition());
+    	
+    	mEditor.putInt(SetAudioChannelCount, mAudioChannelCount.getSelectedItemPosition());
+    	mEditor.putInt(SetVideoCodec, mVideoCodec.getSelectedItemPosition());
+    	mEditor.putInt(SetAudioCodec, mAudioCodec.getSelectedItemPosition());
+    	mEditor.putInt(SetVideoProfileLevel, mVideoProfileLevel.getSelectedItemPosition());
+    	mEditor.putInt(SetAudioProfile, mAudioProfile.getSelectedItemPosition());
+    	
+    	mEditor.putInt(SetOrientationt, mOrientation.getSelectedItemPosition());
+    	
+    	//提交
+    	mEditor.commit();
+    	
+    	
+    	
+    	//  mVideoCodec.getSelectedItemPosition()
+    	
+    	
     }
     
     private void onAudioCodecSelected(String codecName) {
@@ -744,15 +967,36 @@ public class screenmain extends Activity {
         if (requestCode == REQUEST_MEDIA_PROJECTION) {
             // NOTE: Should pass this result data into a Service to run ScreenRecorder.
             // The following codes are merely exemplary.
-
+        	Log.d("@@", "chenzhuo Intent" + data);
             MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
             if (mediaProjection == null) {
                 Log.e("@@", "media projection is null");
                 return;
             }
+            
+            VideoEncodeConfig video ;
+            AudioEncodeConfig audio ;
+            
+           // VideoEncodeConfig video = createVideoConfig();
+           // AudioEncodeConfig audio = createAudioConfig(); // audio can be null
+            
+           if(ifquickRecord == 1)
+           {
+   			
+                video = quickcreateVideoConfig();
+                audio = quickcreateAudioConfig();
+                
+        	   
+           }
+           else {
+			
+               video = createVideoConfig();
+               audio = createAudioConfig(); // audio can be null
+           
+           }
+            
+            
 
-            VideoEncodeConfig video = createVideoConfig();
-            AudioEncodeConfig audio = createAudioConfig(); // audio can be null
             if (video == null) {
                 toast("Create ScreenRecorder failure");
                 mediaProjection.stop();
@@ -769,11 +1013,27 @@ public class screenmain extends Activity {
                     + "-" + video.width + "x" + video.height + ".mp4");
             Log.d("@@", "Create recorder with :" + video + " \n " + audio + "\n " + file);
             mRecorder = newRecorder(mediaProjection, video, audio, file);
-            if (hasPermissions()) {
-                startRecorder();
-            } else {
-                cancelRecorder();
+            
+            if(ifquickRecord == 1)
+            {
+                if (quickhasPermissions()) {
+                    startRecorder();
+                } else {
+                    cancelRecorder();
+                }
+            	
             }
+            else {
+            	
+                if (hasPermissions()) {
+                    startRecorder();
+                } else {
+                    cancelRecorder();
+                }
+            	
+            }
+            	
+
         }
         
 
@@ -803,14 +1063,54 @@ public class screenmain extends Activity {
         int iframe = getSelectedIFrameInterval();
         int bitrate = getSelectedVideoBitrate();
         MediaCodecInfo.CodecProfileLevel profileLevel = getSelectedProfileLevel();
+        //save setting
+        
+        mEditor.putInt(Setwidth, width);
+        mEditor.putInt(Setheight, height);
+        mEditor.putInt(Setframerate, framerate);
+        mEditor.putInt(Setiframe, iframe);
+        mEditor.putInt(Setbitrate, bitrate);
+        mEditor.putString(SetprofileLevel, (String) mVideoProfileLevel.getSelectedItem());
+        mEditor.putString(Setcodec,codec);
+        
+        mEditor.commit();
+        
+        
+        
         return new VideoEncodeConfig(width, height, bitrate,
                 framerate, iframe, codec, ScreenRecorder.VIDEO_AVC, profileLevel);
     }
+    
+    
+    private VideoEncodeConfig quickcreateVideoConfig() {
+    	
+        int width 		= mSharedPreferences.getInt(Setwidth, 480);        
+        int height 		= mSharedPreferences.getInt(Setheight, 800);
+        int framerate 	= mSharedPreferences.getInt(Setframerate, 800);
+        int iframe 		= mSharedPreferences.getInt(Setiframe, 30);
+        int bitrate 	= mSharedPreferences.getInt(Setbitrate, 5000);
+        String codec    = mSharedPreferences.getString(Setcodec, "");
+        
+        MediaCodecInfo.CodecProfileLevel profileLevel  = Utils.toProfileLevel((String) mSharedPreferences.getString(SetprofileLevel, ""));
+    	
+        return new VideoEncodeConfig(width, height, bitrate,
+                framerate, iframe, codec, ScreenRecorder.VIDEO_AVC, profileLevel);
+    }
+    
+    
+    
     private String getSelectedVideoCodec() {
+    	
+    	int getPosition = mVideoCodec.getSelectedItemPosition(); 	
+    	Log.d("screenrecordinfo", "VideoCodec Position_" + getPosition + "_");
         return  mVideoCodec.getSelectedItem();
     }
     private int[] getSelectedWithHeight() {
         if (mVieoResolution == null) throw new IllegalStateException();
+        
+    	int getPosition = mVieoResolution.getSelectedItemPosition(); 	
+    	Log.d("screenrecordinfo", "mVieoResolution Position_" + getPosition + "_");
+        
         String selected = mVieoResolution.getSelectedItem();
         String[] xes = selected.split("x");
         if (xes.length != 2) throw new IllegalArgumentException();
@@ -838,7 +1138,14 @@ public class screenmain extends Activity {
     
     private int getSelectedVideoBitrate() {
         if (mVideoBitrate == null) throw new IllegalStateException();
+        
+    	int getPosition = mVideoBitrate.getSelectedItemPosition(); 	
+    	Log.d("screenrecordinfo", "mVideoBitrate Position_" + getPosition + "_");
+    	
         String selectedItem = mVideoBitrate.getSelectedItem(); //kbps
+        
+        
+        
         return Integer.parseInt(selectedItem) * 1000;
     }
     
@@ -853,8 +1160,31 @@ public class screenmain extends Activity {
         int channelCount = getSelectedAudioChannelCount();
         int profile = getSelectedAudioProfile();
 
+        
+        mEditor.putInt(SetVoicebitrate, bitrate);
+        mEditor.putInt(SetVoicesamplerate, samplerate);
+        mEditor.putInt(SetVoicechannelCount, channelCount);
+        mEditor.putInt(SetVoiceprofile, profile);
+        mEditor.putString(SetVoicecodec, codec);
+        mEditor.commit();
+        
+        
         return new AudioEncodeConfig(codec, ScreenRecorder.AUDIO_AAC, bitrate, samplerate, channelCount, profile);
     }
+    
+    private AudioEncodeConfig quickcreateAudioConfig() {
+    	
+        int bitrate 		= mSharedPreferences.getInt(SetVoicebitrate, 80);
+        int samplerate 		= mSharedPreferences.getInt(SetVoicesamplerate, 44100);
+        int channelCount	= mSharedPreferences.getInt(SetVoicechannelCount, 1);
+        int profile 		= mSharedPreferences.getInt(SetVoiceprofile, 80);
+    	String codec 		= mSharedPreferences.getString(SetVoicecodec, "");
+    	
+    	
+    	
+    	return new AudioEncodeConfig(codec, ScreenRecorder.AUDIO_AAC, bitrate, samplerate, channelCount, profile);
+    }
+    
     private String getSelectedAudioCodec() {
     	
     	Object ok = mAudioCodec.getSelectedItem();
@@ -896,8 +1226,22 @@ public class screenmain extends Activity {
     private void startRecorder() {
         if (mRecorder == null) return;
         mRecorder.start();
-        mButton.setText("Stop Recorder");
+        if(ifquickRecord == 1)
+        {
+        	
+        	
+        }
+        else {
+			
+        	 mButton.setText("Stop Recorder");
+		}
+        
+       
+        
+        
         registerReceiver(mStopActionReceiver, new IntentFilter(ACTION_STOP));
+     
+        
         moveTaskToBack(true);
     }
     
@@ -907,7 +1251,19 @@ public class screenmain extends Activity {
             mRecorder.quit();
         }
         mRecorder = null;
-        mButton.setText("Restart recorder");
+        if(ifquickRecord == 1)
+        {
+        	
+        	
+        }
+        else {
+			
+            mButton.setText("Restart recorder");
+		}
+        
+        
+        
+    
         try {
             unregisterReceiver(mStopActionReceiver);
         } catch (Exception e) {
@@ -916,12 +1272,27 @@ public class screenmain extends Activity {
     }
     
     private boolean hasPermissions() {
+    	
+    	Log.d(TAG, "hasPermissions ");
+    	
         PackageManager pm = getPackageManager();
         String packageName = getPackageName();
         int granted = (mAudioToggle.isChecked() ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
                 | pm.checkPermission(WRITE_EXTERNAL_STORAGE, packageName);
         return granted == PackageManager.PERMISSION_GRANTED;
     }
+    
+    private boolean quickhasPermissions() {
+    	
+    	Log.d(TAG, "quickhasPermissions ");
+    	
+        PackageManager pm = getPackageManager();
+        String packageName = getPackageName();
+        int granted = (true ? pm.checkPermission(RECORD_AUDIO, packageName) : PackageManager.PERMISSION_GRANTED)
+                | pm.checkPermission(WRITE_EXTERNAL_STORAGE, packageName);
+        return granted == PackageManager.PERMISSION_GRANTED;
+    }
+    
     
     private ScreenRecorder newRecorder(MediaProjection mediaProjection, VideoEncodeConfig video,
             AudioEncodeConfig audio, final File output) {
@@ -971,5 +1342,29 @@ public class screenmain extends Activity {
          });
          return r;
      }
+
+     public void quicklyRecord() {
+    	 
+	      Log.i(TAG, "quicklyRecord");
+		// TODO Auto-generated method stub
+	      
+
+       if (mRecorder != null) {
+           //stopRecorder();
+           //no need to stop ,because it come from broadcast or button
+           Log.d(TAG, "Screen Record is running");
+	   		Toast mToast = Toast.makeText(this, "it is screen recording", Toast.LENGTH_SHORT);
+	   		mToast.show();
+           
+       } else if (quickhasPermissions()) {
+           startCaptureIntent();
+       } else if (Build.VERSION.SDK_INT >= M) {
+           requestPermissions();
+       } else {
+           toast("No permission to write sd card");
+       }
+     }
+
+
 }
 
